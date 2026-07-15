@@ -13,25 +13,6 @@ Dengan SimPro-Kon, proses pelaporan harian, verifikasi, audit, hingga pemantauan
 
 Sistem ini menyediakan beberapa level akses sesuai dengan peran masing-masing:
 
-1. **Super Admin**
-   - Tugas: Mengelola data Master Proyek & User
-   - Email: `admin@diproda.test`
-   - Password: `password`
-
-2. **Kontraktor (PT Maju Jaya Konstruksi)**
-   - Tugas: Membuat dan mengirim Laporan Harian & Mingguan
-   - Email: `kontraktor@diproda.test`
-   - Password: `password`
-
-3. **Konsultan Pengawas (CV Andalan Konsultan)**
-   - Tugas: Melakukan Verifikasi & Audit laporan dari Kontraktor
-   - Email: `konsultan@diproda.test`
-   - Password: `password`
-
-4. **PPK (Pejabat Pembuat Komitmen)**
-   - Tugas: Melihat grafik S-Curve & memberikan Final Approval
-   - Email: `ppk@diproda.test`
-   - Password: `password`
 
 ## 👥 Tim Kami
 
