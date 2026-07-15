@@ -37,16 +37,28 @@ Sistem ini menyediakan beberapa level akses sesuai dengan peran masing-masing:
 
 Aplikasi ini dikembangkan oleh 5 orang yang berdedikasi dengan keahlian di bidangnya masing-masing:
 
-1. **Budi Santoso** – *Project Manager*
-   Bertanggung jawab memastikan proyek berjalan sesuai timeline dan spesifikasi yang diharapkan.
-2. **Siti Aminah** – *System Analyst & UI/UX Designer*
-   Merancang alur sistem manajemen konstruksi dan membuat desain antarmuka yang ramah pengguna.
-3. **Andi Wijaya** – *Backend Developer*
-   Mengatur logika sistem, integrasi database, dan arsitektur server aplikasi.
-4. **Rina Melati** – *Frontend Developer*
-   Menerjemahkan desain ke dalam kode dan memastikan aplikasi berjalan responsif di berbagai perangkat.
-5. **Reza Pahlevi** – *Quality Assurance (QA) & DevOps*
-   Menguji aplikasi untuk memastikan bebas bug serta mengelola proses deployment ke server.
+<table>
+  <tr>
+    <td align="center"><img src="https://ui-avatars.com/api/?name=Budi+Santoso&background=random&size=100" width="80" style="border-radius:50%;"><br><b>Budi Santoso</b><br><i>Project Manager</i></td>
+    <td>Bertanggung jawab memastikan proyek berjalan sesuai timeline dan spesifikasi yang diharapkan.</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://ui-avatars.com/api/?name=Siti+Aminah&background=random&size=100" width="80" style="border-radius:50%;"><br><b>Siti Aminah</b><br><i>System Analyst & UI/UX</i></td>
+    <td>Merancang alur sistem manajemen konstruksi dan membuat desain antarmuka yang ramah pengguna.</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://ui-avatars.com/api/?name=Andi+Wijaya&background=random&size=100" width="80" style="border-radius:50%;"><br><b>Andi Wijaya</b><br><i>Backend Developer</i></td>
+    <td>Mengatur logika sistem, integrasi database, dan arsitektur server aplikasi.</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://ui-avatars.com/api/?name=Rina+Melati&background=random&size=100" width="80" style="border-radius:50%;"><br><b>Rina Melati</b><br><i>Frontend Developer</i></td>
+    <td>Menerjemahkan desain ke dalam kode dan memastikan aplikasi berjalan responsif di berbagai perangkat.</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="https://ui-avatars.com/api/?name=Reza+Pahlevi&background=random&size=100" width="80" style="border-radius:50%;"><br><b>Reza Pahlevi</b><br><i>QA & DevOps</i></td>
+    <td>Menguji aplikasi untuk memastikan bebas bug serta mengelola proses deployment ke server.</td>
+  </tr>
+</table>
 
 ---
 *Dibuat dengan semangat untuk memajukan sistem konstruksi di Indonesia.*
