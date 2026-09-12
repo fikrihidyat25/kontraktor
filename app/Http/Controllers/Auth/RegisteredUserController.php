@@ -34,12 +34,20 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['required', 'in:kontraktor,konsultan,ppk'],
+            'penanggung_jawab' => ['nullable', 'string', 'max:255'],
+            'kab_kota' => ['nullable', 'string', 'max:255'],
+            'skpd' => ['nullable', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
+            'penanggung_jawab' => $request->penanggung_jawab,
+            'kab_kota' => $request->role === 'ppk' ? $request->kab_kota : null,
+            'skpd' => $request->role === 'ppk' ? $request->skpd : null,
         ]);
 
         event(new Registered($user));

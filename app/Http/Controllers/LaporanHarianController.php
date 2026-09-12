@@ -23,6 +23,8 @@ class LaporanHarianController extends Controller
             return Proyek::where('konsultan_id', $user->id)->where('status', 'aktif')->get();
         } elseif ($user->isPPK()) {
             return Proyek::where('ppk_id', $user->id)->get();
+        } elseif ($user->isPPTK()) {
+            return Proyek::where('pptk_id', $user->id)->get();
         }
         return collect();
     }
@@ -56,10 +58,28 @@ class LaporanHarianController extends Controller
     {
         if (!Auth::user()->isKontraktor()) abort(403);
 
+        $data = $request->all();
+        
+        if (isset($data['tenaga_kerja'])) {
+            $data['tenaga_kerja'] = array_filter($data['tenaga_kerja'], fn($item) => (int)($item['jumlah'] ?? 0) > 0);
+        }
+        if (isset($data['material'])) {
+            $data['material'] = array_filter($data['material'], fn($item) => !empty($item['jenis_material']));
+        }
+        if (isset($data['peralatan'])) {
+            $data['peralatan'] = array_filter($data['peralatan'], fn($item) => !empty($item['jenis_alat']));
+        }
+        if (isset($data['realisasi'])) {
+            $data['realisasi'] = array_filter($data['realisasi'], fn($item) => !empty($item['divisi_pekerjaan']));
+        }
+        $request->replace($data);
+
         $validated = $request->validate([
             'proyek_id'      => 'required|exists:proyeks,id',
             'tanggal'        => 'required|date',
-            'kondisi_cuaca'  => 'required|in:cerah,berawan,hujan_ringan,hujan_lebat',
+            'kondisi_cuaca'  => 'required|string|in:cerah,berawan,hujan_ringan,hujan_lebat',
+            'waktu_mulai'    => 'nullable|date_format:H:i',
+            'waktu_selesai'  => 'nullable|date_format:H:i',
             'catatan'        => 'nullable|string',
 
             'tenaga_kerja'                => 'nullable|array',
@@ -75,14 +95,16 @@ class LaporanHarianController extends Controller
 
             'peralatan'                 => 'nullable|array',
             'peralatan.*.jenis_alat'    => 'required|string',
-            'peralatan.*.jumlah'        => 'required|integer|min:1',
-            'peralatan.*.kondisi'       => 'required|string',
+            'peralatan.*.jumlah'        => 'required|integer|min:0',
+            'peralatan.*.kondisi'       => 'required|in:baik,rusak_ringan,rusak_berat,tidak_beroperasi',
             'peralatan.*.jam_operasi'   => 'required|numeric|min:0',
 
             'realisasi'                        => 'nullable|array',
             'realisasi.*.divisi_pekerjaan'     => 'required|string',
-            'realisasi.*.nilai_realisasi'      => 'required|numeric|min:0',
-            'realisasi.*.bobot_fisik'          => 'required|numeric|min:0|max:100',
+
+            'dokumentasi' => 'nullable|array',
+            'dokumentasi.*' => 'file|mimes:jpg,jpeg,png|max:10240',
+            'lampiran_tambahan' => 'nullable|file|mimes:pdf,doc,docx,zip,rar,jpg,jpeg,png|max:10240',
 
             'action' => 'required|in:draft,submit',
         ]);
@@ -90,7 +112,24 @@ class LaporanHarianController extends Controller
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
         if (!$proyekIds->contains($validated['proyek_id'])) abort(403);
 
-        DB::transaction(function () use ($validated) {
+        $dokumentasiPaths = [];
+        if ($request->hasFile('dokumentasi')) {
+            foreach ($request->file('dokumentasi') as $file) {
+                $dokumentasiPaths[] = $file->store('laporan_harian_docs', 'public');
+            }
+        }
+
+        $lampiranPath = null;
+        if ($request->hasFile('lampiran_tambahan')) {
+            $lampiranPath = $request->file('lampiran_tambahan')->store('laporan_harian_docs', 'public');
+        }
+
+        $waktuCuaca = null;
+        if (!empty($validated['waktu_mulai']) && !empty($validated['waktu_selesai'])) {
+            $waktuCuaca = $validated['waktu_mulai'] . ' - ' . $validated['waktu_selesai'];
+        }
+
+        DB::transaction(function () use ($validated, $dokumentasiPaths, $lampiranPath, $waktuCuaca) {
             $status = $validated['action'] === 'submit' ? 'submitted' : 'draft';
 
             $laporan = LaporanHarian::create([
@@ -98,7 +137,10 @@ class LaporanHarianController extends Controller
                 'kontraktor_id'  => Auth::id(),
                 'tanggal'        => $validated['tanggal'],
                 'kondisi_cuaca'  => $validated['kondisi_cuaca'],
+                'waktu_cuaca'    => $waktuCuaca,
                 'catatan'        => $validated['catatan'] ?? null,
+                'dokumentasi'    => $dokumentasiPaths,
+                'lampiran_tambahan' => $lampiranPath,
                 'status'         => $status,
             ]);
 
@@ -120,7 +162,7 @@ class LaporanHarianController extends Controller
             }
             if (!empty($validated['realisasi'])) {
                 foreach ($validated['realisasi'] as $rea) {
-                    RealisasiBiaya::create(['laporan_harian_id' => $laporan->id, 'divisi_pekerjaan' => $rea['divisi_pekerjaan'], 'nilai_realisasi' => $rea['nilai_realisasi'], 'bobot_fisik' => $rea['bobot_fisik']]);
+                    RealisasiBiaya::create(['laporan_harian_id' => $laporan->id, 'divisi_pekerjaan' => $rea['divisi_pekerjaan'], 'nilai_realisasi' => 0]);
                 }
             }
         });
@@ -143,7 +185,10 @@ class LaporanHarianController extends Controller
     {
         if (!Auth::user()->isKontraktor() || $laporanHarian->kontraktor_id !== Auth::id()) abort(403);
         if (!in_array($laporanHarian->status, ['draft', 'rejected'])) return back()->with('error', 'Laporan ini tidak dapat dikirim ulang.');
-        $laporanHarian->update(['status' => 'submitted']);
+        $laporanHarian->update([
+            'status' => 'submitted',
+            'is_read_konsultan' => false
+        ]);
         return back()->with('success', 'Laporan berhasil dikirim ke Konsultan Pengawas.');
     }
 
@@ -160,6 +205,7 @@ class LaporanHarianController extends Controller
             'catatan_konsultan' => $request->catatan_konsultan,
             'verified_by'       => Auth::id(),
             'verified_at'       => now(),
+            'is_read_pptk'      => false,
         ]);
         return redirect()->route('laporan-harian.index')->with('success', 'Laporan berhasil diverifikasi dan diteruskan ke PPK.');
     }
@@ -177,13 +223,14 @@ class LaporanHarianController extends Controller
             'catatan_konsultan' => $request->catatan_konsultan,
             'verified_by'       => Auth::id(),
             'verified_at'       => now(),
+            'is_read_kontraktor'=> false,
         ]);
         return redirect()->route('laporan-harian.index')->with('success', 'Laporan dikembalikan ke Kontraktor untuk perbaikan.');
     }
 
     public function approve(Request $request, LaporanHarian $laporanHarian)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        if (!Auth::user()->isPPTK()) abort(403);
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
         if (!$proyekIds->contains($laporanHarian->proyek_id)) abort(403);
 
@@ -194,24 +241,37 @@ class LaporanHarianController extends Controller
             'catatan_ppk' => $request->catatan_ppk,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
+            'is_read_kontraktor'=> false,
+            'is_read_konsultan' => false,
         ]);
         return redirect()->route('laporan-harian.index')->with('success', 'Laporan disetujui. Data bobot resmi masuk perhitungan kemajuan proyek.');
     }
 
-    public function rejectPPK(Request $request, LaporanHarian $laporanHarian)
+    public function rejectPPTK(Request $request, LaporanHarian $laporanHarian)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        if (!Auth::user()->isPPTK()) abort(403);
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
         if (!$proyekIds->contains($laporanHarian->proyek_id)) abort(403);
 
         $request->validate(['catatan_ppk' => 'required|string']);
 
         $laporanHarian->update([
-            'status'      => 'rejected',
+            'status'      => 'submitted', // Returns to Konsultan
             'catatan_ppk' => $request->catatan_ppk,
             'approved_by' => Auth::id(),
             'approved_at' => now(),
+            'is_read_konsultan' => false,
         ]);
-        return redirect()->route('laporan-harian.index')->with('success', 'Laporan dikembalikan untuk perbaikan.');
+        return redirect()->route('laporan-harian.index')->with('success', 'Laporan dikembalikan ke Konsultan untuk direvisi.');
+    }
+
+    public function markRead(LaporanHarian $laporanHarian)
+    {
+        $u = Auth::user();
+        if ($u->isKontraktor()) $laporanHarian->update(['is_read_kontraktor' => true]);
+        elseif ($u->isKonsultan()) $laporanHarian->update(['is_read_konsultan' => true]);
+        elseif ($u->isPPTK()) $laporanHarian->update(['is_read_pptk' => true]);
+        
+        return response()->json(['success' => true]);
     }
 }

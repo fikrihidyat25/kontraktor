@@ -6,8 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\LaporanBulanan;
 use App\Models\Proyek;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class LaporanBulananController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index()
     {
         $query = LaporanBulanan::with(['proyek', 'kontraktor']);
@@ -22,50 +26,57 @@ class LaporanBulananController extends Controller
             $query->whereHas('proyek', function ($q) {
                 $q->where('ppk_id', auth()->id());
             });
+        } elseif (auth()->user()->isPPTK()) {
+            $query->whereHas('proyek', function ($q) {
+                $q->where('pptk_id', auth()->id());
+            });
         }
         
         $laporans = $query->latest()->paginate(10);
         return view('laporan_bulanan.index', compact('laporans'));
     }
 
-    public function create()
-    {
-        $this->authorize('create', LaporanBulanan::class);
-        $proyeks = Proyek::where('kontraktor_id', auth()->id())->get();
-        return view('laporan_bulanan.create', compact('proyeks'));
-    }
-
-    public function store(Request $request)
-    {
-        $this->authorize('create', LaporanBulanan::class);
-        
-        $validated = $request->validate([
-            'proyek_id' => 'required|exists:proyeks,id',
-            'bulan' => 'required|integer|min:1|max:12',
-            'tahun' => 'required|integer|min:2020',
-            'bobot_rencana' => 'required|numeric|min:0|max:100',
-            'bobot_realisasi' => 'required|numeric|min:0|max:100',
-            'ringkasan_kemajuan' => 'nullable|string',
-            'kendala' => 'nullable|string',
-            'file_laporan' => 'nullable|mimes:pdf|max:10240',
-        ]);
-
-        $validated['kontraktor_id'] = auth()->id();
-        $validated['deviasi'] = $validated['bobot_realisasi'] - $validated['bobot_rencana'];
-        $validated['status'] = 'draft';
-
-        if ($request->hasFile('file_laporan')) {
-            $validated['file_laporan'] = $request->file('file_laporan')->store('laporan_bulanan', 'public');
-        }
-
-        LaporanBulanan::create($validated);
-        return redirect()->route('laporan-bulanan.index')->with('success', 'Laporan bulanan berhasil disimpan sebagai draft.');
-    }
 
     public function show(LaporanBulanan $laporanBulanan)
     {
         $this->authorize('view', $laporanBulanan);
         return view('laporan_bulanan.show', compact('laporanBulanan'));
+    }
+
+    public function edit(LaporanBulanan $laporanBulanan)
+    {
+        $this->authorize('update', $laporanBulanan);
+        return view('laporan_bulanan.edit', compact('laporanBulanan'));
+    }
+
+    public function update(Request $request, LaporanBulanan $laporanBulanan)
+    {
+        $this->authorize('update', $laporanBulanan);
+        
+        $request->validate([
+            'lampiran_tambahan' => 'nullable|file|mimes:pdf,doc,docx,zip,rar,jpg,jpeg,png|max:10240',
+            'dokumentasi_tambahan.*' => 'nullable|file|mimes:jpg,jpeg,png|max:10240',
+        ]);
+        
+        $data = [];
+        
+        if ($request->hasFile('lampiran_tambahan')) {
+            $data['lampiran_tambahan'] = $request->file('lampiran_tambahan')->store('laporan_bulanan_docs', 'public');
+        }
+        
+        if ($request->hasFile('dokumentasi_tambahan')) {
+            $dokumentasi = is_array($laporanBulanan->dokumentasi) ? $laporanBulanan->dokumentasi : [];
+            foreach ($request->file('dokumentasi_tambahan') as $file) {
+                $dokumentasi[] = $file->store('laporan_bulanan_docs', 'public');
+            }
+            $data['dokumentasi'] = $dokumentasi;
+        }
+        
+        if(!empty($data)) {
+            $laporanBulanan->update($data);
+        }
+        
+        return redirect()->route('laporan-bulanan.show', $laporanBulanan)->with('success', 'Laporan bulanan berhasil diperbarui.');
     }
 
     public function submit(Request $request, LaporanBulanan $laporanBulanan)
@@ -92,7 +103,8 @@ class LaporanBulananController extends Controller
 
     public function approve(Request $request, LaporanBulanan $laporanBulanan)
     {
-        $this->authorize('approve', $laporanBulanan);
+        $this->authorize('approve', $laporanBulanan); // We will need to update policies too if we have any
+        if(!auth()->user()->isPPTK()) abort(403);
         
         $request->validate(['catatan_ppk' => 'nullable|string']);
         
@@ -119,7 +131,7 @@ class LaporanBulananController extends Controller
             return back()->with('error', 'Laporan ditolak oleh Konsultan.');
         }
 
-        if (auth()->user()->isPPK()) {
+        if (auth()->user()->isPPTK()) {
             $this->authorize('approve', $laporanBulanan);
             $request->validate(['catatan_ppk' => 'required|string']);
             $laporanBulanan->update([
@@ -128,7 +140,7 @@ class LaporanBulananController extends Controller
                 'approved_by' => auth()->id(),
                 'approved_at' => now(),
             ]);
-            return back()->with('error', 'Laporan ditolak oleh PPK.');
+            return back()->with('error', 'Laporan ditolak oleh PPTK.');
         }
 
         abort(403);

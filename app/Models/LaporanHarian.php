@@ -7,25 +7,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LaporanHarian extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'proyek_id',
         'kontraktor_id',
         'tanggal',
         'kondisi_cuaca',
+        'waktu_cuaca',
         'catatan',
         'status',
         'catatan_konsultan',
+        'catatan_ppk',
+        'dokumentasi',
         'verified_by',
         'verified_at',
-        'catatan_ppk',
         'approved_by',
+        'is_read_kontraktor',
+        'is_read_konsultan',
+        'is_read_pptk',
         'approved_at',
     ];
 
     protected $casts = [
         'tanggal'     => 'date',
+        'dokumentasi' => 'array',
         'verified_at' => 'datetime',
         'approved_at' => 'datetime',
     ];

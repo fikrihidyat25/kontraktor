@@ -20,7 +20,18 @@
             <div>Proyek Aktif: <strong class="font-bold">{{ $proyeks->first()->nama_proyek }}</strong> <span class="text-[#3B82F6] mx-2">|</span> Lokasi: {{ $proyeks->first()->lokasi }}</div>
         </div>
 
-        <form method="POST" action="{{ route('laporan-harian.store') }}" id="form-laporan">
+        @if ($errors->any())
+            <div class="bg-[#FEF2F2] border-l-4 border-[#DC2626] text-[#DC2626] p-4 mb-6 rounded shadow-sm text-sm">
+                <p class="font-bold mb-2">Terjadi kesalahan pada pengisian form:</p>
+                <ul class="list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('laporan-harian.store') }}" id="form-laporan" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="proyek_id" value="{{ $proyeks->first()->id }}">
 
@@ -35,13 +46,26 @@
                         @error('tanggal')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
-                        <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Kondisi Cuaca</label>
-                        <select name="kondisi_cuaca" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" required>
-                            <option value="cerah" {{ old('kondisi_cuaca')=='cerah'?'selected':'' }}>☀️ Cerah</option>
-                            <option value="berawan" {{ old('kondisi_cuaca')=='berawan'?'selected':'' }}>⛅ Berawan</option>
-                            <option value="hujan_ringan" {{ old('kondisi_cuaca')=='hujan_ringan'?'selected':'' }}>🌦️ Hujan Ringan</option>
-                            <option value="hujan_lebat" {{ old('kondisi_cuaca')=='hujan_lebat'?'selected':'' }}>🌧️ Hujan Lebat</option>
-                        </select>
+                        <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Kondisi Cuaca & Jam</label>
+                        <div class="flex space-x-2">
+                            <select name="kondisi_cuaca" class="w-1/2 border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" required>
+                                <option value="cerah" {{ old('kondisi_cuaca')=='cerah'?'selected':'' }}>☀️ Cerah</option>
+                                <option value="berawan" {{ old('kondisi_cuaca')=='berawan'?'selected':'' }}>⛅ Berawan</option>
+                                <option value="hujan_ringan" {{ old('kondisi_cuaca')=='hujan_ringan'?'selected':'' }}>🌦️ Hujan Ringan</option>
+                                <option value="hujan_lebat" {{ old('kondisi_cuaca')=='hujan_lebat'?'selected':'' }}>🌧️ Hujan Lebat</option>
+                            </select>
+                            <div class="flex space-x-2 w-1/2">
+                                <div class="w-full">
+                                    <div class="text-[10px] text-[#64748B] uppercase mb-1">Mulai</div>
+                                    <input type="time" name="waktu_mulai" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('waktu_mulai') }}">
+                                </div>
+                                <span class="text-[#64748B] flex items-end mb-2">-</span>
+                                <div class="w-full">
+                                    <div class="text-[10px] text-[#64748B] uppercase mb-1">Selesai</div>
+                                    <input type="time" name="waktu_selesai" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('waktu_selesai') }}">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="md:col-span-3">
                         <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Catatan Umum / Kendala Lapangan</label>
@@ -138,31 +162,42 @@
                 </div>
             </div>
 
-            <!-- TABEL REALISASI -->
-            <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] overflow-hidden mb-8">
+            <!-- TABEL REALISASI (Sekarang Kegiatan) -->
+            <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] overflow-hidden mb-6">
                 <div class="bg-[#F8FAFC] border-b border-[#E7E3DC] px-5 py-3 flex justify-between items-center">
-                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider">D. Realisasi Biaya & Bobot</h3>
+                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider">D. Rincian Kegiatan</h3>
                     <button type="button" onclick="addRow('realisasi-tbody', realisasiRow)" class="text-[11px] font-bold text-[#1D4ED8] hover:text-[#1E3A8A] bg-[#EFF6FF] px-3 py-1 rounded border border-[#BFDBFE] transition">+ Tambah Baris</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="text-[11px] text-[#64748B] uppercase bg-white border-b border-[#E7E3DC]">
                             <tr>
-                                <th class="px-4 py-3 font-semibold w-[40%]">Divisi Pekerjaan</th>
-                                <th class="px-4 py-3 font-semibold w-[25%] text-right">Nilai Realisasi (Rp)</th>
-                                <th class="px-4 py-3 font-semibold w-[25%] text-right">Bobot Fisik (%)</th>
-                                <th class="px-4 py-3 font-semibold w-[10%] text-center">Aksi</th>
+                                <th class="px-4 py-3 font-semibold w-[85%]">Nama Kegiatan</th>
+                                <th class="px-4 py-3 font-semibold w-[15%] text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody id="realisasi-tbody">
                             <tr class="border-b border-[#E7E3DC] hover:bg-[#F8FAFC]">
                                 <td class="px-4 py-2"><input type="text" name="realisasi[0][divisi_pekerjaan]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm focus:ring-[#FFA000]" placeholder="Misal: Pekerjaan Tanah..."></td>
-                                <td class="px-4 py-2"><input type="number" name="realisasi[0][nilai_realisasi]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-right focus:ring-[#FFA000]" value="0" min="0" step="1000" required></td>
-                                <td class="px-4 py-2"><input type="number" name="realisasi[0][bobot_fisik]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-right focus:ring-[#FFA000]" value="0" min="0" max="100" step="0.01" required></td>
-                                <td class="px-4 py-2 text-center"><button type="button" onclick="removeRow(this)" class="text-[#DC2626] hover:bg-[#FEF2F2] p-1.5 rounded transition"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>
+                                <td class="px-4 py-2 text-center"><button type="button" onclick="removeRow(this)" class="text-[#DC2626] hover:bg-[#FEF2F2] p-1.5 rounded transition" title="Hapus baris"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- DOKUMENTASI -->
+            <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] p-6 mb-6">
+                <div class="flex justify-between items-center mb-4 border-b border-[#E7E3DC] pb-2">
+                    <h2 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider">Dokumentasi Lapangan</h2>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Upload Foto (Maksimal 10MB per file, bisa pilih banyak file)</label>
+                    <input type="file" name="dokumentasi[]" multiple accept="image/*" class="w-full text-sm text-[#64748B] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#F1F5F9] file:text-[#0F172B] hover:file:bg-[#E2E8F0]">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-2">Lampiran Tambahan (Opsional)</label>
+                    <input type="file" name="lampiran_tambahan" accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png" class="w-full text-sm text-[#64748B] file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#F1F5F9] file:text-[#0F172B] hover:file:bg-[#E2E8F0]">
                 </div>
             </div>
 
@@ -206,7 +241,7 @@
         return `<td class="px-4 py-2"><input type="text" name="peralatan[${idx}][jenis_alat]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm focus:ring-[#FFA000]" placeholder="Jenis alat..."></td><td class="px-4 py-2"><input type="number" name="peralatan[${idx}][jumlah]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-center focus:ring-[#FFA000]" value="1" min="1" required></td><td class="px-4 py-2"><select name="peralatan[${idx}][kondisi]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm focus:ring-[#FFA000]"><option value="baik">Baik</option><option value="rusak_ringan">Rusak Ringan</option><option value="rusak_berat">Rusak Berat</option><option value="tidak_beroperasi">Tidak Beroperasi</option></select></td><td class="px-4 py-2"><input type="number" name="peralatan[${idx}][jam_operasi]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-center focus:ring-[#FFA000]" value="0" min="0" step="0.5" required></td>` + btnHtml;
     }
     function realisasiRow(idx) {
-        return `<td class="px-4 py-2"><input type="text" name="realisasi[${idx}][divisi_pekerjaan]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm focus:ring-[#FFA000]" placeholder="Divisi pekerjaan..."></td><td class="px-4 py-2"><input type="number" name="realisasi[${idx}][nilai_realisasi]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-right focus:ring-[#FFA000]" value="0" min="0" step="1000" required></td><td class="px-4 py-2"><input type="number" name="realisasi[${idx}][bobot_fisik]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm text-right focus:ring-[#FFA000]" value="0" min="0" max="100" step="0.01" required></td>` + btnHtml;
+        return `<td class="px-4 py-2"><input type="text" name="realisasi[${idx}][divisi_pekerjaan]" class="w-full border-[#E7E3DC] rounded py-1 px-2 text-sm focus:ring-[#FFA000]" placeholder="Nama Kegiatan..."></td>` + btnHtml;
     }
     </script>
 </x-app-layout>

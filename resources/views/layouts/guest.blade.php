@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login — DIPRODA</title>
+    <title>Login — DIGITAPRODA</title>
 
     <!-- Poppins Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,10 +60,9 @@
     <div class="login-wrapper">
         <div class="login-branding">
             <div>
-                <h1>DIPRO<span>DA</span></h1>
-                <p>Digitalisasi Proyek Daerah. Silakan masuk untuk mengakses modul pelaporan dan pengawasan.</p>
+                <h1>DIGITA<span>PRODA</span></h1>
+                <p>Digitalisasi Tata Kelola dan Monitoring Proyek Daerah. Silakan masuk untuk mengakses modul pelaporan dan pengawasan.</p>
             </div>
-            <div class="sop-text">SOP/UPM/DJBM-113 Rev:01</div>
         </div>
         <div class="login-form-container">
             {{ $slot }}

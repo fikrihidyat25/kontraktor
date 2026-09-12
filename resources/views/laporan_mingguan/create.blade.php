@@ -30,28 +30,80 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div>
                         <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Minggu Ke-</label>
-                        <input type="number" name="minggu_ke" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm font-bold text-[#0F172B]" value="{{ old('minggu_ke', $lastMinggu + 1) }}" min="1" required>
+                        <input type="number" name="minggu_ke" class="w-full border-[#E7E3DC] rounded text-sm font-bold text-[#0F172B] bg-gray-100 cursor-not-allowed" value="{{ old('minggu_ke', $lastMinggu + 1) }}" readonly required>
                         @error('minggu_ke')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Tanggal Mulai (Senin)</label>
-                        <input type="date" name="tanggal_mulai" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('tanggal_mulai') }}" required>
+                        <input type="date" id="tanggal_mulai" name="tanggal_mulai" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('tanggal_mulai') }}" required>
                         @error('tanggal_mulai')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Tanggal Selesai (Minggu)</label>
-                        <input type="date" name="tanggal_selesai" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('tanggal_selesai') }}" required>
+                        <input type="date" id="tanggal_selesai" name="tanggal_selesai" class="w-full border-[#E7E3DC] rounded bg-gray-100 text-[#64748B] cursor-not-allowed text-sm" value="{{ old('tanggal_selesai') }}" readonly required>
                         @error('tanggal_selesai')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
                 <div class="bg-[#F8FAFC] border border-[#E7E3DC] p-5 rounded-lg mb-6">
-                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b border-[#E7E3DC] pb-2">Dokumen Laporan Mingguan</h3>
-                    <div class="mb-4">
-                        <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Unggah File Laporan (PDF/Excel)</label>
-                        <input type="file" name="file_laporan" class="w-full border-[#E7E3DC] bg-white rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm p-2" accept=".pdf,.xls,.xlsx,.doc,.docx" required>
-                        <div class="text-[10px] text-[#94A3B8] mt-1 italic">Maksimal ukuran file: 10MB.</div>
-                        @error('file_laporan')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
+                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b border-[#E7E3DC] pb-2">Akumulasi Progress</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                        <div class="bg-white p-3 border border-[#E7E3DC] rounded">
+                            <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Akumulasi Realisasi S/D Minggu Lalu</label>
+                            <div class="text-lg font-bold text-[#0F172B]">{{ number_format($bobotLaluRealisasi, 2, ',', '.') }}%</div>
+                            <input type="hidden" id="bobot_lalu_realisasi" value="{{ $bobotLaluRealisasi }}">
+                        </div>
+                        <div class="bg-white p-3 border border-[#E7E3DC] rounded">
+                            <label class="block text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Akumulasi Rencana S/D Minggu Lalu</label>
+                            <div class="text-lg font-bold text-[#0F172B]">{{ number_format($bobotLaluRencana, 2, ',', '.') }}%</div>
+                            <input type="hidden" id="bobot_lalu_rencana" value="{{ $bobotLaluRencana }}">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Progress Realisasi Minggu Ini (%)</label>
+                            <input type="number" name="progress_minggu_ini" id="progress_minggu_ini" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('progress_minggu_ini') }}" step="0.01" min="0" max="100" required>
+                            @error('progress_minggu_ini')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Rencana Progress Minggu Ini (%)</label>
+                            <input type="number" name="rencana_minggu_ini" id="rencana_minggu_ini" class="w-full border-[#E7E3DC] rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm" value="{{ old('rencana_minggu_ini') }}" step="0.01" min="0" max="100" required>
+                            @error('rencana_minggu_ini')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-[#EFF6FF] border border-[#BFDBFE] rounded text-sm text-[#1E3A8A]">
+                        Akumulasi Realisasi S/D Minggu Ini: <strong id="total_realisasi">{{ number_format($bobotLaluRealisasi, 2, ',', '.') }}</strong>%
+                        <br>
+                        Akumulasi Rencana S/D Minggu Ini: <strong id="total_rencana">{{ number_format($bobotLaluRencana, 2, ',', '.') }}</strong>%
+                        <br>
+                        Deviasi: <strong id="deviasi_text">0,00</strong>%
+                    </div>
+                </div>
+
+                <div class="bg-[#F8FAFC] border border-[#E7E3DC] p-5 rounded-lg mb-6">
+                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b border-[#E7E3DC] pb-2">Dokumen & Lampiran</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Unggah File Laporan (PDF/Excel)</label>
+                            <input type="file" name="file_laporan" class="w-full border-[#E7E3DC] bg-white rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm p-2" accept=".pdf,.xls,.xlsx,.doc,.docx">
+                            <div class="text-[10px] text-[#94A3B8] mt-1 italic">Opsional. Maksimal ukuran file: 10MB.</div>
+                            @error('file_laporan')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Lampiran Tambahan (Opsional)</label>
+                            <input type="file" name="lampiran_tambahan" class="w-full border-[#E7E3DC] bg-white rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm p-2" accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png">
+                            <div class="text-[10px] text-[#94A3B8] mt-1 italic">Opsional. (PDF, ZIP, JPG, dll).</div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">Dokumentasi (Foto-foto)</label>
+                            <input type="file" name="dokumentasi[]" multiple accept="image/*" class="w-full border-[#E7E3DC] bg-white rounded focus:ring-[#FFA000] focus:border-[#FFA000] text-sm p-2">
+                            <div class="text-[10px] text-[#94A3B8] mt-1 italic">Opsional. Bisa pilih banyak foto (Maks 10MB per file).</div>
+                            @error('dokumentasi')<div class="text-[11px] text-[#DC2626] mt-1">{{ $message }}</div>@enderror
+                        </div>
                     </div>
                 </div>
 
@@ -76,4 +128,56 @@
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressMingguIni = document.getElementById('progress_minggu_ini');
+            const rencanaMingguIni = document.getElementById('rencana_minggu_ini');
+            const bobotLaluRealisasi = parseFloat(document.getElementById('bobot_lalu_realisasi').value) || 0;
+            const bobotLaluRencana = parseFloat(document.getElementById('bobot_lalu_rencana').value) || 0;
+            
+            const totalRealisasiEl = document.getElementById('total_realisasi');
+            const totalRencanaEl = document.getElementById('total_rencana');
+            const deviasiEl = document.getElementById('deviasi_text');
+
+            function calculate() {
+                const prog = parseFloat(progressMingguIni.value) || 0;
+                const renc = parseFloat(rencanaMingguIni.value) || 0;
+                
+                const totReal = bobotLaluRealisasi + prog;
+                const totRenc = bobotLaluRencana + renc;
+                const dev = totReal - totRenc;
+                
+                totalRealisasiEl.textContent = totReal.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                totalRencanaEl.textContent = totRenc.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                deviasiEl.textContent = dev.toLocaleString('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                if (dev >= 0) {
+                    deviasiEl.className = 'text-[#15803D]';
+                } else {
+                    deviasiEl.className = 'text-[#DC2626]';
+                }
+            }
+
+            progressMingguIni.addEventListener('input', calculate);
+            rencanaMingguIni.addEventListener('input', calculate);
+
+            // Auto-calculate Tanggal Selesai (Mulai + 6 hari)
+            const tanggalMulaiEl = document.getElementById('tanggal_mulai');
+            const tanggalSelesaiEl = document.getElementById('tanggal_selesai');
+
+            tanggalMulaiEl.addEventListener('change', function() {
+                if (this.value) {
+                    const date = new Date(this.value);
+                    date.setDate(date.getDate() + 6);
+                    const yyyy = date.getFullYear();
+                    const mm = String(date.getMonth() + 1).padStart(2, '0');
+                    const dd = String(date.getDate()).padStart(2, '0');
+                    tanggalSelesaiEl.value = `${yyyy}-${mm}-${dd}`;
+                } else {
+                    tanggalSelesaiEl.value = '';
+                }
+            });
+        });
+    </script>
 </x-app-layout>

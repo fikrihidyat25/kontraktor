@@ -46,8 +46,11 @@
                     @endif
                 </div>
                 <div>
-                    <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Cuaca</div>
+                    <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Cuaca & Jam</div>
                     <div class="text-sm font-semibold text-[#0F172B]">{{ $laporanHarian->cuaca_label }}</div>
+                    @if($laporanHarian->waktu_cuaca)
+                    <div class="text-[11px] text-[#64748B] mt-0.5">{{ $laporanHarian->waktu_cuaca }}</div>
+                    @endif
                 </div>
                 <div>
                     <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Kontraktor</div>
@@ -141,31 +144,43 @@
                 </div>
             </div>
 
-            <!-- Realisasi -->
+            <!-- Kegiatan -->
             <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] overflow-hidden">
                 <div class="bg-[#F8FAFC] border-b border-[#E7E3DC] px-5 py-3">
-                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider">D. Realisasi Biaya & Bobot</h3>
+                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider">D. Rincian Kegiatan</h3>
                 </div>
                 <div class="p-0 overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="text-[11px] text-[#64748B] uppercase bg-white border-b border-[#E7E3DC]">
-                            <tr><th class="px-5 py-3 font-semibold">Divisi</th><th class="px-5 py-3 font-semibold text-right">Nilai (Rp)</th><th class="px-5 py-3 font-semibold text-right">Bobot</th></tr>
+                            <tr><th class="px-5 py-3 font-semibold">Nama Kegiatan</th></tr>
                         </thead>
                         <tbody>
                             @forelse($laporanHarian->realisasiBiayas as $r)
                             <tr class="border-b border-[#E7E3DC] hover:bg-[#F8FAFC]">
                                 <td class="px-5 py-3 text-[#0F172B] font-medium">{{ $r->divisi_pekerjaan }}</td>
-                                <td class="px-5 py-3 text-right text-[#64748B]">{{ number_format($r->nilai_realisasi, 0, ',', '.') }}</td>
-                                <td class="px-5 py-3 text-right font-bold text-[#FFA000]">{{ number_format($r->bobot_fisik, 2, ',', '.') }}%</td>
                             </tr>
                             @empty
-                            <tr><td colspan="3" class="px-5 py-4 text-center text-[#64748B] italic">Tidak ada data realisasi.</td></tr>
+                            <tr><td class="px-5 py-4 text-center text-[#64748B] italic">Tidak ada rincian kegiatan.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+        @if($laporanHarian->dokumentasi && count($laporanHarian->dokumentasi) > 0)
+        <!-- DOKUMENTASI -->
+        <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] p-6 mb-8">
+            <h2 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b border-[#E7E3DC] pb-2">Dokumentasi Lapangan</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                @foreach($laporanHarian->dokumentasi as $doc)
+                <a href="{{ Storage::url($doc) }}" target="_blank" class="block overflow-hidden rounded border border-[#E7E3DC] hover:border-[#FFA000] transition">
+                    <img src="{{ Storage::url($doc) }}" alt="Dokumentasi" class="w-full h-32 object-cover">
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
         <!-- ==========================================
              RBAC ACTION PANELS (SINGLE INTERFACE LOGIC)
@@ -180,7 +195,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-[#F0FDF4] border border-[#BBF7D0] p-5 rounded-lg">
-                    <h3 class="text-sm font-bold text-[#15803D] mb-4">Verifikasi & Teruskan ke PPK</h3>
+                    <h3 class="text-sm font-bold text-[#15803D] mb-4">Verifikasi & Teruskan ke PPTK</h3>
                     <form method="POST" action="{{ route('laporan-harian.verify', $laporanHarian) }}">
                         @csrf
                         <textarea name="catatan_konsultan" rows="3" class="w-full border-[#BBF7D0] rounded focus:ring-[#15803D] focus:border-[#15803D] text-sm mb-4 bg-white" placeholder="Catatan audit (opsional)..."></textarea>
@@ -204,30 +219,30 @@
         @endif
 
         <!-- PPK ACTION: APPROVE/REJECT -->
-        @if(auth()->user()->isPPK() && $laporanHarian->status === 'verified')
+        @if(auth()->user()->isPPTK() && $laporanHarian->status === 'verified')
         <div class="bg-white rounded-lg shadow-sm border-2 border-[#1D4ED8] p-6 mb-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-[#1D4ED8] text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl-lg">Approval Mode</div>
-            <h2 class="text-lg font-bold text-[#0F172B] mb-2">Final Approval Owner / PPK</h2>
-            <p class="text-sm text-[#64748B] mb-6">Laporan ini telah diaudit Konsultan Pengawas. Berikan persetujuan final.</p>
+            <div class="absolute top-0 right-0 bg-[#1D4ED8] text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl-lg">Mode Persetujuan</div>
+            <h2 class="text-lg font-bold text-[#0F172B] mb-2">Persetujuan Akhir PPTK</h2>
+            <p class="text-sm text-[#64748B] mb-6">Laporan ini telah diperiksa Konsultan Pengawas. Berikan persetujuan akhir.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-[#F0FDF4] border border-[#BBF7D0] p-5 rounded-lg">
                     <h3 class="text-sm font-bold text-[#15803D] mb-4">Setujui Progress Ini</h3>
                     <form method="POST" action="{{ route('laporan-harian.approve', $laporanHarian) }}">
                         @csrf
-                        <textarea name="catatan_ppk" rows="3" class="w-full border-[#BBF7D0] rounded focus:ring-[#15803D] focus:border-[#15803D] text-sm mb-4 bg-white" placeholder="Catatan approval (opsional)..."></textarea>
+                        <textarea name="catatan_ppk" rows="3" class="w-full border-[#BBF7D0] rounded focus:ring-[#15803D] focus:border-[#15803D] text-sm mb-4 bg-white" placeholder="Catatan persetujuan (opsional)..."></textarea>
                         <button type="submit" class="w-full bg-[#15803D] text-white px-4 py-2 rounded text-sm font-bold hover:bg-opacity-90 shadow-sm">
-                            Approve Laporan
+                            Setujui Laporan
                         </button>
                     </form>
                 </div>
                 <div class="bg-[#FEF2F2] border border-[#FECACA] p-5 rounded-lg">
                     <h3 class="text-sm font-bold text-[#DC2626] mb-4">Batalkan / Kembalikan</h3>
-                    <form method="POST" action="{{ route('laporan-harian.reject-ppk', $laporanHarian) }}">
+                    <form method="POST" action="{{ route('laporan-harian.reject-pptk', $laporanHarian) }}">
                         @csrf
                         <textarea name="catatan_ppk" rows="3" required class="w-full border-[#FECACA] rounded focus:ring-[#DC2626] focus:border-[#DC2626] text-sm mb-4 bg-white" placeholder="Alasan pembatalan (Wajib)..."></textarea>
                         <button type="submit" class="w-full bg-[#DC2626] text-white px-4 py-2 rounded text-sm font-bold hover:bg-opacity-90 shadow-sm">
-                            Reject Laporan
+                            Tolak Laporan
                         </button>
                     </form>
                 </div>
@@ -249,7 +264,7 @@
                 
                 @if($laporanHarian->catatan_ppk)
                     <div class="bg-[#F8FAFC] border border-[#E7E3DC] p-4 rounded text-sm">
-                        <div class="font-bold text-[#0F172B] mb-1">Catatan Keputusan PPK</div>
+                        <div class="font-bold text-[#0F172B] mb-1">Catatan Keputusan PPTK</div>
                         <div class="text-[#64748B] italic">"{{ $laporanHarian->catatan_ppk }}"</div>
                         <div class="text-[10px] text-[#94A3B8] mt-2">{{ $laporanHarian->approvedBy->name ?? 'PPK' }} — {{ $laporanHarian->approved_at?->format('d/m/Y H:i') }}</div>
                     </div>

@@ -10,6 +10,8 @@ class Proyek extends Model
     use HasFactory;
 
     protected $fillable = [
+        'kab_kota',
+        'skpd',
         'nama_proyek',
         'nomor_kontrak',
         'lokasi',
@@ -19,6 +21,7 @@ class Proyek extends Model
         'kontraktor_id',
         'konsultan_id',
         'ppk_id',
+        'pptk_id',
         'status',
         'deskripsi',
     ];
@@ -44,6 +47,11 @@ class Proyek extends Model
         return $this->belongsTo(User::class, 'ppk_id');
     }
 
+    public function pptk()
+    {
+        return $this->belongsTo(User::class, 'pptk_id');
+    }
+
     public function laporanHarians()
     {
         return $this->hasMany(LaporanHarian::class);
@@ -52,6 +60,16 @@ class Proyek extends Model
     public function laporanMingguans()
     {
         return $this->hasMany(LaporanMingguan::class);
+    }
+
+    public function dokumenProyeks()
+    {
+        return $this->hasMany(DokumenProyek::class);
+    }
+
+    public function siteMeetings()
+    {
+        return $this->hasMany(SiteMeeting::class);
     }
 
     public function getDurasiHariAttribute(): int

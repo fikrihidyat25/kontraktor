@@ -42,6 +42,14 @@
                         {{ $laporanMingguan->tanggal_mulai->format('d/m/Y') }} <br> s/d <br> {{ $laporanMingguan->tanggal_selesai->format('d/m/Y') }}
                     </div>
                 </div>
+                <div class="col-span-2 md:col-span-1">
+                    <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Akumulasi Realisasi</div>
+                    <div class="text-xl font-bold text-[#15803D]">{{ number_format($laporanMingguan->bobot_realisasi, 2, ',', '.') }}%</div>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Akumulasi Rencana</div>
+                    <div class="text-xl font-bold text-[#0F172B]">{{ number_format($laporanMingguan->bobot_rencana, 2, ',', '.') }}%</div>
+                </div>
                 <div class="col-span-2 md:col-span-2">
                     <div class="text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">Dokumen Laporan</div>
                     @if($laporanMingguan->file_laporan)
@@ -69,6 +77,20 @@
             </div>
             @endif
         </div>
+
+        @if($laporanMingguan->dokumentasi && count($laporanMingguan->dokumentasi) > 0)
+        <!-- DOKUMENTASI -->
+        <div class="bg-white rounded-lg shadow-sm border border-[#E7E3DC] p-6 mb-8">
+            <h2 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b border-[#E7E3DC] pb-2">Dokumentasi Lapangan</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                @foreach($laporanMingguan->dokumentasi as $doc)
+                <a href="{{ Storage::url($doc) }}" target="_blank" class="block overflow-hidden rounded border border-[#E7E3DC] hover:border-[#FFA000] transition">
+                    <img src="{{ Storage::url($doc) }}" alt="Dokumentasi" class="w-full h-32 object-cover">
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
 
         <!-- ==========================================
              RBAC ACTION PANELS (SINGLE INTERFACE LOGIC)
@@ -126,21 +148,21 @@
         </div>
         @endif
 
-        <!-- PPK ACTION: APPROVE/REJECT -->
-        @if(auth()->user()->isPPK() && $laporanMingguan->status === 'verified')
+        <!-- PPTK ACTION: APPROVE/REJECT -->
+        @if(auth()->user()->isPPTK() && $laporanMingguan->status === 'verified')
         <div class="bg-white rounded-lg shadow-sm border-2 border-[#1D4ED8] p-6 mb-8 relative overflow-hidden">
-            <div class="absolute top-0 right-0 bg-[#1D4ED8] text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl-lg">Approval Mode</div>
-            <h2 class="text-lg font-bold text-[#0F172B] mb-2">Final Approval Owner / PPK</h2>
-            <p class="text-sm text-[#64748B] mb-6">Laporan ini telah diaudit Konsultan Pengawas. Berikan persetujuan final untuk dicatat pada S-Curve Proyek.</p>
+            <div class="absolute top-0 right-0 bg-[#1D4ED8] text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl-lg">Mode Persetujuan</div>
+            <h2 class="text-lg font-bold text-[#0F172B] mb-2">Persetujuan Akhir PPTK</h2>
+            <p class="text-sm text-[#64748B] mb-6">Laporan ini telah diperiksa Konsultan Pengawas. Berikan persetujuan akhir untuk dicatat pada S-Curve Proyek.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-[#F0FDF4] border border-[#BBF7D0] p-5 rounded-lg">
                     <h3 class="text-sm font-bold text-[#15803D] mb-4">Setujui Progress Ini</h3>
                     <form method="POST" action="{{ route('laporan-mingguan.approve', $laporanMingguan) }}">
                         @csrf
-                        <textarea name="catatan_ppk" rows="3" class="w-full border-[#BBF7D0] rounded focus:ring-[#15803D] focus:border-[#15803D] text-sm mb-4 bg-white" placeholder="Catatan approval (opsional)..."></textarea>
+                        <textarea name="catatan_ppk" rows="3" class="w-full border-[#BBF7D0] rounded focus:ring-[#15803D] focus:border-[#15803D] text-sm mb-4 bg-white" placeholder="Catatan persetujuan (opsional)..."></textarea>
                         <button type="submit" class="w-full bg-[#15803D] text-white px-4 py-2 rounded text-sm font-bold hover:bg-opacity-90 shadow-sm">
-                            Approve Laporan
+                            Setujui Laporan
                         </button>
                     </form>
                 </div>
@@ -150,7 +172,7 @@
                         @csrf
                         <textarea name="catatan_ppk" rows="3" required class="w-full border-[#FECACA] rounded focus:ring-[#DC2626] focus:border-[#DC2626] text-sm mb-4 bg-white" placeholder="Alasan pembatalan (Wajib)..."></textarea>
                         <button type="submit" class="w-full bg-[#DC2626] text-white px-4 py-2 rounded text-sm font-bold hover:bg-opacity-90 shadow-sm">
-                            Reject Laporan
+                            Tolak Laporan
                         </button>
                     </form>
                 </div>
@@ -172,9 +194,9 @@
                 
                 @if($laporanMingguan->catatan_ppk)
                     <div class="bg-[#F8FAFC] border border-[#E7E3DC] p-4 rounded text-sm">
-                        <div class="font-bold text-[#0F172B] mb-1">Catatan Keputusan PPK</div>
+                        <div class="font-bold text-[#0F172B] mb-1">Catatan Keputusan PPTK</div>
                         <div class="text-[#64748B] italic">"{{ $laporanMingguan->catatan_ppk }}"</div>
-                        <div class="text-[10px] text-[#94A3B8] mt-2">{{ $laporanMingguan->approvedBy->name ?? 'PPK' }} — {{ $laporanMingguan->approved_at?->format('d/m/Y H:i') }}</div>
+                        <div class="text-[10px] text-[#94A3B8] mt-2">{{ $laporanMingguan->approvedBy->name ?? 'PPTK' }} — {{ $laporanMingguan->approved_at?->format('d/m/Y H:i') }}</div>
                     </div>
                 @endif
 

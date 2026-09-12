@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Proyek;
 use App\Models\LaporanMingguan;
+use App\Models\LaporanBulanan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,8 @@ class LaporanMingguanController extends Controller
             return Proyek::where('konsultan_id', $user->id)->where('status', 'aktif')->get();
         } elseif ($user->isPPK()) {
             return Proyek::where('ppk_id', $user->id)->get();
+        } elseif ($user->isPPTK()) {
+            return Proyek::where('pptk_id', $user->id)->get();
         }
         return collect();
     }
@@ -54,7 +57,14 @@ class LaporanMingguanController extends Controller
         $proyek = $proyeks->first();
         $lastMinggu = LaporanMingguan::where('proyek_id', $proyek->id)->max('minggu_ke') ?? 0;
         
-        return view('laporan_mingguan.create', compact('proyek', 'lastMinggu'));
+        $laporanLalu = LaporanMingguan::where('proyek_id', $proyek->id)
+            ->where('minggu_ke', $lastMinggu)
+            ->first();
+            
+        $bobotLaluRealisasi = $laporanLalu ? $laporanLalu->bobot_realisasi : 0;
+        $bobotLaluRencana = $laporanLalu ? $laporanLalu->bobot_rencana : 0;
+        
+        return view('laporan_mingguan.create', compact('proyek', 'lastMinggu', 'bobotLaluRealisasi', 'bobotLaluRencana'));
     }
 
     public function store(Request $request)
@@ -69,7 +79,12 @@ class LaporanMingguanController extends Controller
             'file_laporan'       => 'nullable|file|mimes:pdf,xls,xlsx,doc,docx|max:10240',
             'ringkasan_kemajuan' => 'nullable|string',
             'kendala'            => 'nullable|string',
+            'dokumentasi'        => 'nullable|array',
+            'dokumentasi.*'      => 'file|mimes:jpg,jpeg,png|max:10240',
+            'progress_minggu_ini'=> 'required|numeric|min:0|max:100',
+            'rencana_minggu_ini' => 'required|numeric|min:0|max:100',
             'action'             => 'required|in:draft,submit',
+            'lampiran_tambahan'  => 'nullable|file|mimes:pdf,doc,docx,zip,rar,jpg,jpeg,png|max:10240',
         ]);
 
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
@@ -77,9 +92,32 @@ class LaporanMingguanController extends Controller
 
         $status = $validated['action'] === 'submit' ? 'submitted' : 'draft';
 
+        $laporanLalu = LaporanMingguan::where('proyek_id', $validated['proyek_id'])
+            ->where('minggu_ke', $validated['minggu_ke'] - 1)
+            ->first();
+            
+        $bobotLaluRealisasi = $laporanLalu ? $laporanLalu->bobot_realisasi : 0;
+        $bobotLaluRencana = $laporanLalu ? $laporanLalu->bobot_rencana : 0;
+        
+        $bobotRealisasiKumulatif = $bobotLaluRealisasi + $validated['progress_minggu_ini'];
+        $bobotRencanaKumulatif = $bobotLaluRencana + $validated['rencana_minggu_ini'];
+        $deviasi = $bobotRealisasiKumulatif - $bobotRencanaKumulatif;
+
         $path = null;
         if ($request->hasFile('file_laporan')) {
             $path = $request->file('file_laporan')->store('laporan_mingguan_docs', 'public');
+        }
+
+        $lampiranPath = null;
+        if ($request->hasFile('lampiran_tambahan')) {
+            $lampiranPath = $request->file('lampiran_tambahan')->store('laporan_mingguan_docs', 'public');
+        }
+        
+        $dokumentasiPaths = [];
+        if ($request->hasFile('dokumentasi')) {
+            foreach ($request->file('dokumentasi') as $file) {
+                $dokumentasiPaths[] = $file->store('laporan_mingguan_docs', 'public');
+            }
         }
 
         LaporanMingguan::create([
@@ -88,10 +126,15 @@ class LaporanMingguanController extends Controller
             'minggu_ke'          => $validated['minggu_ke'],
             'tanggal_mulai'      => $validated['tanggal_mulai'],
             'tanggal_selesai'    => $validated['tanggal_selesai'],
+            'bobot_rencana'      => $bobotRencanaKumulatif,
+            'bobot_realisasi'    => $bobotRealisasiKumulatif,
+            'deviasi'            => $deviasi,
             'file_laporan'       => $path,
             'ringkasan_kemajuan' => $validated['ringkasan_kemajuan'] ?? null,
             'kendala'            => $validated['kendala'] ?? null,
+            'dokumentasi'        => $dokumentasiPaths,
             'status'             => $status,
+            'lampiran_tambahan'  => $lampiranPath,
         ]);
 
         $msg = $validated['action'] === 'submit' ? 'Laporan mingguan berhasil dikirim ke Konsultan Pengawas.' : 'Laporan mingguan disimpan sebagai draft.';
@@ -142,7 +185,7 @@ class LaporanMingguanController extends Controller
 
     public function approve(Request $request, LaporanMingguan $laporanMingguan)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        if (!Auth::user()->isPPTK()) abort(403);
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
         if (!$proyekIds->contains($laporanMingguan->proyek_id)) abort(403);
 
@@ -152,12 +195,58 @@ class LaporanMingguanController extends Controller
             'approved_by' => Auth::id(),
             'approved_at' => now(),
         ]);
+
+        if ($laporanMingguan->minggu_ke % 4 == 0) {
+            $bulan_ke = $laporanMingguan->minggu_ke / 4;
+            $tahun = date('Y', strtotime($laporanMingguan->tanggal_selesai));
+            
+            // Check if already exists to prevent duplicate
+            $exists = LaporanBulanan::where('proyek_id', $laporanMingguan->proyek_id)
+                ->where('bulan', $bulan_ke)
+                ->where('tahun', $tahun)
+                ->exists();
+                
+            if (!$exists) {
+                // Get the 4 weekly reports for this month
+                $startMinggu = $laporanMingguan->minggu_ke - 3;
+                $fourWeeks = LaporanMingguan::where('proyek_id', $laporanMingguan->proyek_id)
+                    ->whereBetween('minggu_ke', [$startMinggu, $laporanMingguan->minggu_ke])
+                    ->get();
+                
+                $ringkasan = [];
+                $kendala = [];
+                $dokumentasi = [];
+                
+                foreach($fourWeeks as $week) {
+                    if ($week->ringkasan_kemajuan) $ringkasan[] = "Minggu {$week->minggu_ke}: " . $week->ringkasan_kemajuan;
+                    if ($week->kendala) $kendala[] = "Minggu {$week->minggu_ke}: " . $week->kendala;
+                    if (is_array($week->dokumentasi)) {
+                        $dokumentasi = array_merge($dokumentasi, $week->dokumentasi);
+                    }
+                }
+
+                LaporanBulanan::create([
+                    'proyek_id' => $laporanMingguan->proyek_id,
+                    'kontraktor_id' => $laporanMingguan->kontraktor_id,
+                    'bulan' => $bulan_ke,
+                    'tahun' => $tahun,
+                    'bobot_rencana' => $laporanMingguan->bobot_rencana,
+                    'bobot_realisasi' => $laporanMingguan->bobot_realisasi,
+                    'deviasi' => $laporanMingguan->deviasi,
+                    'ringkasan_kemajuan' => implode("\n", $ringkasan),
+                    'kendala' => implode("\n", $kendala),
+                    'status' => 'draft',
+                    'dokumentasi' => $dokumentasi,
+                ]);
+            }
+        }
+
         return redirect()->route('laporan-mingguan.index')->with('success', 'Laporan mingguan disetujui.');
     }
 
     public function rejectPPK(Request $request, LaporanMingguan $laporanMingguan)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        if (!Auth::user()->isPPTK()) abort(403);
         $proyekIds = $this->getAssignedProyeks()->pluck('id');
         if (!$proyekIds->contains($laporanMingguan->proyek_id)) abort(403);
 

@@ -19,6 +19,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, function ($event) {
+            if ($event->user->role === 'kontraktor') {
+                \App\Models\ActivityLog::create([
+                    'user_id' => $event->user->id,
+                    'action' => 'Login',
+                    'description' => 'User berhasil login ke dalam sistem',
+                ]);
+            }
+        });
     }
 }

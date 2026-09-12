@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LaporanMingguan extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\LogsActivity;
 
     protected $fillable = [
         'proyek_id',
@@ -21,6 +21,7 @@ class LaporanMingguan extends Model
         'ringkasan_kemajuan',
         'kendala',
         'file_laporan',
+        'dokumentasi',
         'status',
         'catatan_konsultan',
         'verified_by',
@@ -33,6 +34,7 @@ class LaporanMingguan extends Model
     protected $casts = [
         'tanggal_mulai'   => 'date',
         'tanggal_selesai' => 'date',
+        'dokumentasi'     => 'array',
         'verified_at'     => 'datetime',
         'approved_at'     => 'datetime',
         'bobot_rencana'   => 'decimal:2',

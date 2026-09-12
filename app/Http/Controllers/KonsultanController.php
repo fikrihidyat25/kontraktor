@@ -40,7 +40,18 @@ class KonsultanController extends Controller
             ->take(10)
             ->get();
 
-        return view('konsultan.dashboard', compact('proyeks', 'stats', 'pendingLaporan'));
+        // S-Curve data
+        $sCurveData = [];
+        foreach ($proyeks as $proyek) {
+            $mingguans = LaporanMingguan::where('proyek_id', $proyek->id)
+                ->where('status', 'approved')
+                ->orderBy('minggu_ke')
+                ->get(['minggu_ke', 'bobot_rencana', 'bobot_realisasi', 'deviasi']);
+
+            $sCurveData[$proyek->id] = $mingguans;
+        }
+
+        return view('konsultan.dashboard', compact('proyeks', 'stats', 'pendingLaporan', 'sCurveData'));
     }
 
     // VERIFIKASI LAPORAN HARIAN

@@ -13,7 +13,7 @@ class LaporanBulananPolicy
      */
     public function viewAny(User $user): bool
     {
-        return in_array($user->role, ['super_admin', 'ppk', 'kontraktor', 'konsultan']);
+        return in_array($user->role, ['admin', 'ppk', 'kontraktor', 'konsultan']);
     }
 
     /**
@@ -21,13 +21,16 @@ class LaporanBulananPolicy
      */
     public function view(User $user, LaporanBulanan $laporanBulanan): bool
     {
-        if ($user->isSuperAdmin()) return true;
+        if (in_array($user->role, ['ppk'])) return true;
         if ($user->isKontraktor()) return $user->id === $laporanBulanan->kontraktor_id;
         if ($user->isKonsultan()) {
             return $laporanBulanan->proyek->konsultan_id === $user->id;
         }
         if ($user->isPPK()) {
             return $laporanBulanan->proyek->ppk_id === $user->id;
+        }
+        if ($user->isPPTK()) {
+            return $laporanBulanan->proyek->pptk_id === $user->id;
         }
         return false;
     }
@@ -84,6 +87,6 @@ class LaporanBulananPolicy
 
     public function approve(User $user, LaporanBulanan $laporanBulanan): bool
     {
-        return $user->isPPK() && $laporanBulanan->status === 'verified' && $laporanBulanan->proyek->ppk_id === $user->id;
+        return $user->isPPTK() && $laporanBulanan->status === 'verified' && $laporanBulanan->proyek->pptk_id === $user->id;
     }
 }

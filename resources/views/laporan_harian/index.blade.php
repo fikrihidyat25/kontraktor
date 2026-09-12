@@ -88,7 +88,7 @@
                                         <span class="w-2.5 h-2.5 rounded-full bg-[#F57F17] animate-pulse absolute -ml-1 -mt-1" title="Butuh Verifikasi"></span>
                                     @endif
 
-                                    @if(auth()->user()->isPPK() && $l->status === 'verified')
+                                    @if(auth()->user()->isPPTK() && $l->status === 'verified')
                                         <!-- Tindakan Approve dilakukan di halaman Show -->
                                         <span class="w-2.5 h-2.5 rounded-full bg-[#F57F17] animate-pulse absolute -ml-1 -mt-1" title="Butuh Approval"></span>
                                     @endif

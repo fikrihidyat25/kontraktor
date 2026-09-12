@@ -35,12 +35,11 @@
             <label for="remember_me">Ingat Sesi Saya</label>
         </div>
 
-        <button type="submit" class="btn-primary">Masuk ke Sistem</button>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url('/') }}" class="btn-primary" style="background-color: #f1f5f9; color: #475569; text-align: center; text-decoration: none; border: 1px solid #cbd5e1; flex: 1;">Kembali</a>
+            <button type="submit" class="btn-primary" style="flex: 1;">Masuk ke Sistem</button>
+        </div>
 
-        @if (Route::has('password.request'))
-            <div style="text-align:center; margin-top:16px;">
-                <a href="{{ route('password.request') }}" style="font-size:11px; color:var(--text-muted); text-decoration:none;">Lupa kata sandi?</a>
-            </div>
-        @endif
+
     </form>
 </x-guest-layout>

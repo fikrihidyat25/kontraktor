@@ -32,6 +32,7 @@ class KontraktorController extends Controller
         $uangMukas = [];
         $ktks = [];
         $stats = ['draft' => 0, 'submitted' => 0, 'verified' => 0, 'approved' => 0, 'rejected' => 0];
+        $sCurveData = ['labels' => [], 'rencana' => [], 'realisasi' => []];
 
         if ($proyekId) {
             $proyek = Proyek::find($proyekId);
@@ -45,8 +46,7 @@ class KontraktorController extends Controller
                     ->get();
 
                 foreach ($stats as $key => &$val) {
-                    $val = LaporanHarian::where('proyek_id', $proyek->id)
-                        ->where('kontraktor_id', Auth::id())
+                    $val = LaporanHarian::where('kontraktor_id', Auth::id())
                         ->where('status', $key)
                         ->count();
                 }
@@ -60,9 +60,20 @@ class KontraktorController extends Controller
                     ->where('kontraktor_id', Auth::id())
                     ->latest()
                     ->get();
+                    
+                $laporanMingguans = \App\Models\LaporanMingguan::where('proyek_id', $proyek->id)
+                    ->where('kontraktor_id', Auth::id())
+                    ->orderBy('minggu_ke')
+                    ->get();
+
+                $sCurveData = [
+                    'labels' => $laporanMingguans->pluck('minggu_ke')->map(fn($m) => 'Mg ' . $m)->toArray(),
+                    'rencana' => $laporanMingguans->pluck('bobot_rencana')->toArray(),
+                    'realisasi' => $laporanMingguans->pluck('bobot_realisasi')->toArray(),
+                ];
             }
         }
 
-        return view('kontraktor.dashboard', compact('proyek', 'recentLaporan', 'uangMukas', 'ktks', 'stats'));
+        return view('kontraktor.dashboard', compact('proyek', 'recentLaporan', 'uangMukas', 'ktks', 'stats', 'sCurveData'));
     }
 }

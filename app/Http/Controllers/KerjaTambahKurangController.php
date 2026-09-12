@@ -18,6 +18,11 @@ class KerjaTambahKurangController extends Controller
         if ($user->isKontraktor()) {
             $query->where('kontraktor_id', $user->id);
             $proyeks = Proyek::where('kontraktor_id', $user->id)->get();
+        } elseif ($user->isPPTK()) {
+            $query->whereHas('proyek', function ($q) use ($user) {
+                $q->where('pptk_id', $user->id);
+            });
+            $proyeks = Proyek::where('pptk_id', $user->id)->get();
         } elseif ($user->isPPK()) {
             $query->whereHas('proyek', function ($q) use ($user) {
                 $q->where('ppk_id', $user->id);
@@ -39,7 +44,8 @@ class KerjaTambahKurangController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::user()->isKontraktor()) abort(403);
+        $user = Auth::user();
+        if (!$user->isKontraktor() && !$user->isPPTK()) abort(403);
 
         $request->validate([
             'proyek_id' => 'required|exists:proyeks,id',
@@ -55,66 +61,53 @@ class KerjaTambahKurangController extends Controller
             $path = $request->file('dokumen_pendukung')->store('ktk_docs', 'public');
         }
 
+        $proyek = Proyek::findOrFail($request->proyek_id);
+
         KerjaTambahKurang::create([
-            'proyek_id' => $request->proyek_id,
-            'kontraktor_id' => Auth::id(),
+            'proyek_id' => $proyek->id,
+            'kontraktor_id' => $proyek->kontraktor_id,
             'nomor_surat_pengajuan' => $request->nomor_surat_pengajuan,
             'tanggal_pengajuan' => now(),
+            'usulan_dari' => $user->isPPTK() ? 'pptk' : 'kontraktor',
             'jenis_ktk' => $request->jenis_ktk,
             'deskripsi_pekerjaan' => $request->deskripsi_pekerjaan,
             'nilai_estimasi' => $request->nilai_estimasi,
             'dokumen_pendukung' => $path,
-            'status' => 'diajukan',
+            'status' => 'menunggu_validasi',
         ]);
 
-        return redirect()->route('kontraktor.dashboard')->with(['success' => 'Usulan Kerja Tambah Kurang berhasil diajukan.', 'currentMenu' => 'ktk']);
-    }
-
-    public function verify(Request $request, KerjaTambahKurang $ktk)
-    {
-        if (!Auth::user()->isKonsultan()) abort(403);
-
-        $ktk->update([
-            'status' => 'diverifikasi_konsultan',
-            'catatan_konsultan' => $request->catatan_konsultan,
-        ]);
-
-        return redirect()->route('kerja-tambah-kurang.index')->with('success', 'Usulan KTK diverifikasi dan diteruskan ke PPK.');
-    }
-
-    public function rejectKonsultan(Request $request, KerjaTambahKurang $ktk)
-    {
-        if (!Auth::user()->isKonsultan()) abort(403);
-
-        $ktk->update([
-            'status' => 'ditolak',
-            'catatan_konsultan' => $request->catatan_konsultan,
-        ]);
-
-        return redirect()->route('kerja-tambah-kurang.index')->with('error', 'Usulan KTK dikembalikan ke kontraktor.');
+        return redirect()->back()->with(['success' => 'Usulan Pekerjaan Tambah Kurang berhasil diajukan.', 'currentMenu' => 'ptk']);
     }
 
     public function approve(Request $request, KerjaTambahKurang $ktk)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        $user = Auth::user();
+        if (!$user->isKontraktor() && !$user->isPPTK()) abort(403);
+
+        if ($ktk->usulan_dari == 'kontraktor' && !$user->isPPTK()) abort(403);
+        if ($ktk->usulan_dari == 'pptk' && !$user->isKontraktor()) abort(403);
 
         $ktk->update([
-            'status' => 'disetujui_ppk',
-            'catatan_ppk' => $request->catatan_ppk,
+            'status' => 'disetujui',
+            'catatan_evaluasi' => $request->catatan_evaluasi,
         ]);
 
-        return redirect()->route('kerja-tambah-kurang.index')->with('success', 'Usulan KTK disetujui.');
+        return redirect()->route('kerja-tambah-kurang.index')->with('success', 'Usulan PTK disetujui.');
     }
 
-    public function rejectPPK(Request $request, KerjaTambahKurang $ktk)
+    public function reject(Request $request, KerjaTambahKurang $ktk)
     {
-        if (!Auth::user()->isPPK()) abort(403);
+        $user = Auth::user();
+        if (!$user->isKontraktor() && !$user->isPPTK()) abort(403);
+
+        if ($ktk->usulan_dari == 'kontraktor' && !$user->isPPTK()) abort(403);
+        if ($ktk->usulan_dari == 'pptk' && !$user->isKontraktor()) abort(403);
 
         $ktk->update([
-            'status' => 'ditolak',
-            'catatan_ppk' => $request->catatan_ppk,
+            'status' => 'revisi',
+            'catatan_evaluasi' => $request->catatan_evaluasi,
         ]);
 
-        return redirect()->route('kerja-tambah-kurang.index')->with('error', 'Usulan KTK ditolak.');
+        return redirect()->route('kerja-tambah-kurang.index')->with('error', 'Usulan PTK dikembalikan untuk revisi.');
     }
 }

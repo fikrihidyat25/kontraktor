@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DIPRODA (Digitalisasi Proyek Daerah) — Sistem Informasi Konstruksi</title>
+    <title>DIGITAPRODA (Digitalisasi Tata Kelola Proyek Daerah) — Sistem Informasi Konstruksi</title>
 
     <!-- Poppins Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +40,7 @@
     <!-- Kiri: Logo -->
     <div class="flex items-center">
         <a href="/" class="text-[#FACC15] text-xl font-bold tracking-tight">
-            DIPRODA
+            DIGITAPRODA
         </a>
     </div>
 
@@ -57,7 +57,7 @@
            
         <a href="#alur" @click="activeSection = 'alur'" 
            :class="activeSection === 'alur' ? 'text-[#FACC15] font-bold' : 'text-white/80 hover:text-white'" 
-           class="text-[13px] transition-colors duration-300 tracking-wide">Alur Laporan</a>
+           class="text-[13px] transition-colors duration-300 tracking-wide">Alur Sistem</a>
            
 
     </div>
@@ -93,7 +93,7 @@
     <div class="flex flex-col px-4 py-4 space-y-3 shadow-lg">
         <a href="#" class="text-[#FACC15] font-medium text-sm border-l-2 border-[#FACC15] pl-3 py-1">Beranda</a>
         <a href="#pilar" @click="mobileMenuOpen = false" class="text-white/70 hover:text-white text-sm font-medium transition pl-3 py-1">Tentang Sistem</a>
-        <a href="#alur" @click="mobileMenuOpen = false" class="text-white/70 hover:text-white text-sm font-medium transition pl-3 py-1">Alur Laporan</a>
+        <a href="#alur" @click="mobileMenuOpen = false" class="text-white/70 hover:text-white text-sm font-medium transition pl-3 py-1">Alur Sistem</a>
 
         
         <div class="pt-3 border-t border-white/10 mt-2">
@@ -146,7 +146,7 @@
 
     <div class="relative z-20 max-w-2xl mt-10 md:mt-0 px-6 md:px-12 lg:px-24">
         <h1 data-aos="fade-up" data-aos-duration="1000" class="text-white text-4xl md:text-5xl lg:text-[54px] font-bold leading-[1.1] mb-6 tracking-tight">
-            Digitalisasi Tata Kelola dan Monitoring Proyek<br class="hidden md:block">
+            Digitalisasi Tata Kelola dan Monitoring Proyek Konstruksi<br class="hidden md:block">
             <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#FACC15] to-[#FFCA28]">Daerah.</span>
         </h1>
         <p data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200" class="text-white/75 text-sm md:text-[15px] max-w-lg mb-8 leading-relaxed">
@@ -178,7 +178,7 @@
 <!-- ALUR PENGGUNAAN -->
 <section class="py-16 bg-[#F8FAFC]" id="alur">
     <div class="w-full px-6 md:px-12 lg:px-20 2xl:px-32 mx-auto">
-        <h2 data-aos="fade-up" class="text-2xl font-bold text-[#0F172B] mb-8">Alur Penggunaan DIPRODA</h2>
+        <h2 data-aos="fade-up" class="text-2xl font-bold text-[#0F172B] mb-8">Alur Penggunaan DIGITAPRODA</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Card 1 -->
             <div data-aos="fade-up" data-aos-delay="100" class="bg-white border border-gray-200 p-6 flex flex-col items-center text-center shadow-sm">
@@ -221,41 +221,41 @@
     <div class="w-full px-6 md:px-12 lg:px-20 2xl:px-32 mx-auto text-center">
         <h2 data-aos="fade-up" class="text-4xl font-bold text-[#0F172B] mb-4">Fitur Unggulan Sistem</h2>
         <p data-aos="fade-up" data-aos-delay="100" class="text-gray-600 mb-10 max-w-2xl mx-auto">
-            DIPRODA hadir dengan berbagai fitur unggulan untuk memastikan pengelolaan proyek yang transparan, akuntabel, dan efisien.
+            DIGITAPRODA hadir dengan berbagai fitur unggulan untuk memastikan pengelolaan proyek yang transparan, akuntabel, dan efisien.
         </p>
         <div data-aos="zoom-in" data-aos-delay="200" class="w-12 h-1 bg-[#FACC15] mx-auto mb-12"></div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
             <!-- Feature 1 -->
             <div data-aos="fade-up" data-aos-delay="100" class="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] flex gap-4">
                 <div class="w-16 h-16 bg-[#F0F5FF] rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 13v-1m4 1v-3m4 3V8M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
                 <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Monitoring Real-Time</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Pantau progres proyek secara langsung dan real-time dari mana saja untuk pengambilan keputusan yang cepat dan tepat.</p>
+                    <h4 class="font-bold text-[#0F172B] mb-2">Pelaporan Progres Terstruktur</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Pengelolaan Laporan Harian, Mingguan, dan Bulanan yang terintegrasi antara Kontraktor, Konsultan, dan PPK.</p>
                     <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
                 </div>
             </div>
             <!-- Feature 2 -->
             <div data-aos="fade-up" data-aos-delay="200" class="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] flex gap-4">
                 <div class="w-16 h-16 bg-[#F0F5FF] rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Dokumentasi Digital</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Kelola dan simpan seluruh dokumen proyek secara digital terstruktur, mudah diakses, dan aman.</p>
+                    <h4 class="font-bold text-[#0F172B] mb-2">Manajemen Tagihan & PTK</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Fasilitas pengajuan Uang Muka, Pekerjaan Tambah Kurang (PTK), dan Tagihan Pembayaran secara digital.</p>
                     <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
                 </div>
             </div>
             <!-- Feature 3 -->
             <div data-aos="fade-up" data-aos-delay="300" class="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] flex gap-4">
                 <div class="w-16 h-16 bg-[#F0F5FF] rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Tracking Lokasi Proyek</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Lacak lokasi proyek dengan akurasi tinggi untuk memastikan kegiatan proyek sesuai dengan perencanaan.</p>
+                    <h4 class="font-bold text-[#0F172B] mb-2">Sistem Verifikasi Berjenjang</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Alur persetujuan dokumen terstandarisasi dari Kontraktor ke Konsultan Pengawas, hingga Final Approval oleh PPK.</p>
                     <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
                 </div>
             </div>
@@ -265,30 +265,8 @@
                     <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
                 <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Dashboard Analitik</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Dapatkan analisis data dan laporan kinerja proyek melalui dashboard interaktif yang informatif dan mudah dipahami.</p>
-                    <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
-                </div>
-            </div>
-            <!-- Feature 5 -->
-            <div data-aos="fade-up" data-aos-delay="500" class="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] flex gap-4">
-                <div class="w-16 h-16 bg-[#F0F5FF] rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                </div>
-                <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Notifikasi Otomatis</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Terima notifikasi otomatis untuk pengingat tenggat waktu, update proyek, dan informasi penting lainnya.</p>
-                    <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
-                </div>
-            </div>
-            <!-- Feature 6 -->
-            <div data-aos="fade-up" data-aos-delay="600" class="bg-white border border-gray-100 rounded-xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] flex gap-4">
-                <div class="w-16 h-16 bg-[#F0F5FF] rounded-xl flex items-center justify-center shrink-0">
-                    <svg class="w-8 h-8 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-                <div>
-                    <h4 class="font-bold text-[#0F172B] mb-2">Keamanan Data</h4>
-                    <p class="text-sm text-gray-500 leading-relaxed">Sistem keamanan berlapis untuk melindungi data proyek dan informasi sensitif dari akses tidak sah.</p>
+                    <h4 class="font-bold text-[#0F172B] mb-2">Dashboard Pemantauan</h4>
+                    <p class="text-sm text-gray-500 leading-relaxed">Ringkasan status laporan, progres S-Curve, dan riwayat pengajuan proyek yang mudah dipantau oleh semua pihak.</p>
                     <div class="w-8 h-1 bg-[#2563EB] mt-4"></div>
                 </div>
             </div>
@@ -299,7 +277,7 @@
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </div>
             <p class="text-sm font-medium text-[#2563EB] text-left">
-                DIPRODA berkomitmen menghadirkan sistem yang andal, aman, dan mudah digunakan untuk mendukung tata kelola proyek daerah yang lebih baik.
+                DIGITAPRODA berkomitmen menghadirkan sistem yang andal, aman, dan mudah digunakan untuk mendukung tata kelola proyek daerah yang lebih baik.
             </p>
         </div>
     </div>
@@ -444,8 +422,8 @@
 <footer class="bg-[#24428B] pt-12 pb-8 px-6 md:px-12">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
         <div>
-            <div class="text-white font-bold mb-4">DIPRODA</div>
-            <p class="text-[11px] text-white/80 font-medium">© 2024 Diproda .</p>
+            <div class="text-white font-bold mb-4">DIGITAPRODA</div>
+            <p class="text-[11px] text-white/80 font-medium">© 2024 Digitaproda .</p>
           <p class="text-[11px] text-white/80 font-medium mt-1">ITP x UBH </p>
         </div>
         <!-- <div class="flex items-center gap-6 text-white text-xs font-semibold">

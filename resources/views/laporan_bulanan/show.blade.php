@@ -6,7 +6,7 @@
         <div class="flex justify-between items-center border-b border-gray-200 pb-6 mb-8">
             <div>
                 <h1 class="text-2xl md:text-3xl font-bold text-[#0F172B]">Detail Laporan Bulanan</h1>
-                <p class="text-sm text-[#64748B] mt-1">{{ $laporanBulanan->proyek->nama_proyek ?? '-' }} | {{ $laporanBulanan->bulan_label }} {{ $laporanBulanan->tahun }}</p>
+                <p class="text-sm text-[#64748B] mt-1">{{ $laporanBulanan->proyek->nama_proyek ?? '-' }} | {{ $laporanBulanan->bulan_label }}</p>
             </div>
             <div>
                 <a href="{{ route('laporan-bulanan.index') }}" class="text-sm text-gray-500 hover:text-gray-900 border border-gray-300 px-4 py-2 rounded-md">← Kembali</a>
@@ -101,6 +101,20 @@
                     @endif
                 </div>
 
+                @if($laporanBulanan->dokumentasi && count($laporanBulanan->dokumentasi) > 0)
+                <div class="bg-white p-6 rounded-lg border border-gray-200">
+                    <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b pb-2">Dokumentasi Foto</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach($laporanBulanan->dokumentasi as $doc)
+                        <a href="{{ asset('storage/'.$doc) }}" target="_blank" class="block overflow-hidden rounded border border-gray-200 hover:border-[#1E3A8A] transition">
+                            <img src="{{ asset('storage/'.$doc) }}" alt="Dokumentasi" class="w-full h-24 object-cover">
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+
                 <!-- Audit Trail / Catatan -->
                 <div class="bg-white p-6 rounded-lg border border-gray-200">
                     <h3 class="text-sm font-bold text-[#0F172B] uppercase tracking-wider mb-4 border-b pb-2">Catatan Verifikasi</h3>
@@ -128,15 +142,20 @@
 
                 <!-- Action Panel -->
                 @if(in_array($laporanBulanan->status, ['draft', 'rejected']) && auth()->user()->isKontraktor())
-                    <div class="bg-[#1E3A8A] p-6 rounded-lg shadow-md text-white">
+                    <div class="bg-[#1E3A8A] p-6 rounded-lg shadow-md text-white mb-6">
                         <h3 class="text-sm font-bold text-[#FFB800] uppercase tracking-wider mb-2">Tindakan Anda</h3>
-                        <p class="text-xs text-gray-300 mb-4">Laporan masih dalam status Draft. Silakan periksa kembali data di atas. Jika sudah sesuai, kirim ke Konsultan untuk diverifikasi.</p>
-                        <form method="POST" action="{{ route('laporan-bulanan.submit', $laporanBulanan) }}" onsubmit="return confirm('Kirim Laporan ini ke Konsultan?')">
-                            @csrf
-                            <button type="submit" class="w-full bg-[#FFB800] text-[#1E3A8A] py-2 rounded text-sm font-bold hover:bg-yellow-400 transition">
-                                Kirim Laporan ke Konsultan
-                            </button>
-                        </form>
+                        <p class="text-xs text-gray-300 mb-4">Laporan masih dalam status Draft. Silakan periksa kembali data di atas. Jika ada tambahan dokumen/lampiran, klik "Lengkapi Data". Jika sudah sesuai, klik "Kirim Laporan".</p>
+                        <div class="space-y-3">
+                            <a href="{{ route('laporan-bulanan.edit', $laporanBulanan) }}" class="block text-center w-full bg-white text-[#1E3A8A] border border-[#1E3A8A] py-2 rounded text-sm font-bold hover:bg-gray-100 transition">
+                                Lengkapi Data
+                            </a>
+                            <form method="POST" action="{{ route('laporan-bulanan.submit', $laporanBulanan) }}" onsubmit="return confirm('Kirim Laporan ini ke Konsultan?')">
+                                @csrf
+                                <button type="submit" class="w-full bg-[#FFB800] text-[#1E3A8A] py-2 rounded text-sm font-bold hover:bg-yellow-400 transition">
+                                    Kirim Laporan ke Konsultan
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 @endif
 
@@ -164,15 +183,15 @@
                     </div>
                 @endif
 
-                @if($laporanBulanan->status == 'verified' && auth()->user()->isPPK())
+                @if($laporanBulanan->status == 'verified' && auth()->user()->isPPTK())
                     <div class="bg-[#1E3A8A] p-6 rounded-lg shadow-md text-white">
-                        <h3 class="text-sm font-bold text-[#FFB800] uppercase tracking-wider mb-4">Tindakan Approval</h3>
+                        <h3 class="text-sm font-bold text-[#FFB800] uppercase tracking-wider mb-4">Tindakan Persetujuan</h3>
                         
                         <form method="POST" action="{{ route('laporan-bulanan.approve', $laporanBulanan) }}" class="mb-3">
                             @csrf
                             <textarea name="catatan_ppk" rows="2" class="w-full rounded text-sm text-gray-900 placeholder-gray-500 border-0 focus:ring-2 focus:ring-[#FFB800] mb-3" placeholder="Opsional: Tambahkan catatan persetujuan..."></textarea>
                             <button type="submit" onclick="return confirm('Setujui laporan ini secara final?')" class="w-full bg-green-500 text-white py-2 rounded text-sm font-bold hover:bg-green-600 transition">
-                                Setujui (Approve)
+                                Setujui Laporan
                             </button>
                         </form>
 

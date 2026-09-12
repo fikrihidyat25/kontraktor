@@ -15,6 +15,12 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    @if(Auth::user()->role === 'kontraktor')
+                    <x-nav-link :href="route('kontraktor.activity_logs')" :active="request()->routeIs('kontraktor.activity_logs')">
+                        {{ __('Log Aktivitas') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +76,12 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+
+            @if(Auth::user()->role === 'kontraktor')
+            <x-responsive-nav-link :href="route('kontraktor.activity_logs')" :active="request()->routeIs('kontraktor.activity_logs')">
+                {{ __('Log Aktivitas') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

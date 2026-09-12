@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UangMuka;
 use App\Models\Proyek;
+use App\Models\DokumenProyek;
 
 class UangMukaController extends Controller
 {
@@ -28,26 +29,83 @@ class UangMukaController extends Controller
                 $q->where('konsultan_id', $user->id);
             });
             $proyeks = collect();
+        } elseif ($user->isPPTK()) {
+            $query->whereHas('proyek', function ($q) use ($user) {
+                $q->where('pptk_id', $user->id);
+            });
+            $proyeks = collect();
         } else {
             $proyeks = collect();
         }
 
         $uangMukas = $query->get();
 
-        return view('uang_muka.index', compact('uangMukas', 'proyeks'));
+        $sisaBisaDiajukan = 0;
+        $canSubmit = false;
+        if ($user->isKontraktor() && $proyeks->isNotEmpty()) {
+            $proyek = $proyeks->first();
+            $totalDiajukan = UangMuka::where('proyek_id', $proyek->id)
+                ->whereIn('status', ['menunggu_persetujuan', 'disetujui'])
+                ->sum('nilai_pengajuan');
+            $sisaBisaDiajukan = $proyek->nilai_kontrak - $totalDiajukan;
+
+            $existingActive = UangMuka::where('proyek_id', $proyek->id)
+                ->whereIn('status', ['menunggu_persetujuan', 'disetujui'])
+                ->exists();
+            $canSubmit = !$existingActive;
+        }
+
+        return view('uang_muka.index', compact('uangMukas', 'proyeks', 'sisaBisaDiajukan', 'canSubmit'));
     }
 
     public function store(Request $request)
     {
+        $proyek = Proyek::findOrFail($request->proyek_id);
+        
+        $existingActive = UangMuka::where('proyek_id', $request->proyek_id)
+            ->whereIn('status', ['menunggu_persetujuan', 'disetujui'])
+            ->exists();
+
+        if ($existingActive) {
+            return redirect()->back()->with('error', 'Pengajuan uang muka sedang diproses atau sudah disetujui. Anda tidak dapat mengajukan lagi.');
+        }
+
+        $spmkExists = DokumenProyek::where('proyek_id', $request->proyek_id)
+            ->where('tipe_dokumen', 'SPMK')
+            ->exists();
+
+        if (!$spmkExists) {
+            return redirect()->back()->with('error', 'Tidak dapat mengajukan Uang Muka. Dokumen SPMK belum diunggah oleh PPK.');
+        }
+
         $request->validate([
             'proyek_id' => 'required|exists:proyeks,id',
-            'nilai_pengajuan' => 'required|numeric|min:1',
-            'dokumen_pendukung' => 'required|file|mimes:pdf,doc,docx,zip,rar|max:10240',
+            'nilai_pengajuan' => ['required', 'numeric', 'min:1'],
+            'surat_permohonan' => 'required|file|mimes:pdf,doc,docx,zip,rar,jpg,jpeg,png|max:10240',
+            'lampiran' => 'nullable|array',
+            'lampiran.*' => 'file|mimes:pdf,doc,docx,zip,rar,jpg,jpeg,png|max:10240',
+        ], [
+            'proyek_id.required' => 'Silakan pilih proyek.',
+            'nilai_pengajuan.required' => 'Nilai pengajuan uang muka wajib diisi.',
+            'nilai_pengajuan.numeric' => 'Nilai pengajuan hanya boleh berisi angka tanpa titik atau koma (contoh: 15000000).',
+            'nilai_pengajuan.min' => 'Nilai pengajuan minimal 1.',
+            'surat_permohonan.required' => 'Surat permohonan wajib diunggah.',
+            'surat_permohonan.mimes' => 'Format surat permohonan harus berupa PDF, Word, atau Gambar.',
+            'surat_permohonan.max' => 'Ukuran file surat permohonan maksimal 10MB.',
+            'lampiran.*.mimes' => 'Format lampiran tidak valid.',
+            'lampiran.*.max' => 'Satu atau lebih file lampiran melebihi 10MB.'
         ]);
 
-        $path = null;
-        if ($request->hasFile('dokumen_pendukung')) {
-            $path = $request->file('dokumen_pendukung')->store('uang_muka_docs', 'public');
+        $suratPath = null;
+        if ($request->hasFile('surat_permohonan')) {
+            $suratPath = $request->file('surat_permohonan')->store('uang_muka_docs', 'public');
+        }
+
+        $lampiranPaths = [];
+        if ($request->hasFile('lampiran')) {
+            foreach ($request->file('lampiran') as $file) {
+                $lampiranPaths[] = $file->store('uang_muka_docs', 'public');
+            }
         }
 
         UangMuka::create([
@@ -55,7 +113,8 @@ class UangMukaController extends Controller
             'kontraktor_id' => auth()->id(),
             'tanggal_pengajuan' => now(),
             'nilai_pengajuan' => $request->nilai_pengajuan,
-            'dokumen_pendukung' => $path,
+            'surat_permohonan' => $suratPath,
+            'lampiran' => empty($lampiranPaths) ? null : $lampiranPaths,
             'status' => 'menunggu_persetujuan',
         ]);
 
@@ -67,8 +126,12 @@ class UangMukaController extends Controller
 
     public function approve(Request $request, UangMuka $uangMuka)
     {
-        if (!auth()->user()->isPPK()) {
+        if (!auth()->user()->isPPTK()) {
             abort(403);
+        }
+
+        if ($request->filled('nomor_kontrak')) {
+            $uangMuka->proyek->update(['nomor_kontrak' => $request->nomor_kontrak]);
         }
 
         $uangMuka->update([
@@ -81,8 +144,12 @@ class UangMukaController extends Controller
 
     public function reject(Request $request, UangMuka $uangMuka)
     {
-        if (!auth()->user()->isPPK()) {
+        if (!auth()->user()->isPPTK()) {
             abort(403);
+        }
+
+        if ($request->filled('nomor_kontrak')) {
+            $uangMuka->proyek->update(['nomor_kontrak' => $request->nomor_kontrak]);
         }
 
         $uangMuka->update([

@@ -74,9 +74,19 @@
             </div>
 
             <!-- File Upload -->
-            <div class="mb-8">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Upload Dokumen Laporan (PDF, Max 10MB)</label>
-                <input type="file" name="file_laporan" accept=".pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1E3A8A] file:text-[#FFB800] hover:file:bg-[#152e70] transition">
+            <div class="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Upload Dokumen Laporan (PDF, Max 10MB)</label>
+                    <input type="file" name="file_laporan" accept=".pdf" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1E3A8A] file:text-[#FFB800] hover:file:bg-[#152e70] transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lampiran Tambahan (Opsional)</label>
+                    <input type="file" name="lampiran_tambahan" accept=".pdf,.doc,.docx,.zip,.rar,.jpg,.jpeg,.png" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1E3A8A] file:text-[#FFB800] hover:file:bg-[#152e70] transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Dokumentasi Foto (Max 10MB/file, Banyak Foto)</label>
+                    <input type="file" name="dokumentasi[]" multiple accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#1E3A8A] file:text-[#FFB800] hover:file:bg-[#152e70] transition">
+                </div>
             </div>
 
             <div class="flex items-center gap-4">

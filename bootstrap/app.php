@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+        
+        // Disable CSRF token validation for Postman testing
+        $middleware->validateCsrfTokens(except: [
+            '*'
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
